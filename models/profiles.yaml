@@ -1,0 +1,34 @@
+# This is a sample file, for detailed reference see: https://rudderlabs.github.io/pywht/
+var_groups:
+  - name: user_vars
+    entity_key: user
+    vars:
+      - entity_var:
+          name: first_seen
+          select: min(CAST(timestamp as DATE))
+          from: inputs/rsTracks
+          is_feature: false
+      - entity_var:
+          name: last_seen
+          select: max(CAST(timestamp as DATE))
+          from: inputs/rsTracks
+          is_feature: false
+      - entity_var:
+          name: user_lifespan
+          select: '{{user.Var("last_seen")}} - {{user.Var("first_seen")}}'
+          description: Life Time Value of a customer
+      - entity_var:
+          name: days_active
+          select: count(distinct(CAST(timestamp as DATE)))
+          from: inputs/rsTracks
+          description: No. of days a customer was active
+# Feature Table (legacy)
+models:
+  - name: domain_profile
+    model_type: feature_table_model
+    model_spec:
+      validity_time: 24h # 1 day
+      entity_key: user
+      features:
+        - user_lifespan
+        - days_active
